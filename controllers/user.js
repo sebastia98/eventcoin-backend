@@ -3,7 +3,7 @@ const User = require("../models/user");
 exports.registerUser = (req, res, next) => {
     const {fullName, username, email, phoneNumber, password, gender} = req.body;
 
-    console.log(req.body, "lo que sea");
+    console.log(req.body, " => user");
 
     //TODO: Check propiedades!
     if(!fullName?.trim()) {
