@@ -1,0 +1,1 @@
+module.exports.GENDER_ENUMS = ["male", "female", "notbinary"];
