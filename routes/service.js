@@ -6,4 +6,6 @@ const router = express.Router();
 
 router.post("/insertService", serivceController.registerService);
 
+router.get("/readServices", serivceController.readServices);
+
 module.exports = router;

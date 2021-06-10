@@ -16,3 +16,20 @@ exports.registerService = (req, res, next) => {
     })
 
 }
+
+exports.readServices = (req, res, next) => {
+
+    const services = Service.find()
+                                .then(products => {
+                                    return products;
+                                }).catch((err) => {
+                                    console.log(err)
+                                })
+    services.then((services) => {
+                console.log(services);
+                res.send({serv: services})
+            })
+            .catch((error) => {
+                res.status(500).send(error);
+            })
+}
