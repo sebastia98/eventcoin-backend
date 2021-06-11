@@ -17,6 +17,10 @@ exports.registerService = (req, res, next) => {
 exports.readServices = (req, res, next) => {
     
     Service.find()
-        .then(services => res.status(201).json({serv: services}))
+        .populate('userId')
+        .then(services => {
+            console.log(services);
+            res.status(201).json({serv: services});
+        })
         .catch(error => res.status(500).json({error}))
 }
