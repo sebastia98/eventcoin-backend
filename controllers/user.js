@@ -45,6 +45,3 @@ exports.loginUser = (req, res, next) => {
         .catch(({message}) => res.status(500).json({message, ok : false}));
 };
 
-exports.findUserById = (id) => User.find({_id : id});
-
-
