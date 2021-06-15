@@ -12,20 +12,23 @@ const cleanSearchText = (text) =>
 exports.registerService = (req, res, next) => {
     const {offeredServices, rate, references, description, userId} = req.body;
 
-    console.log(req.body, " => service");
-
-
     const service = new Service({offeredServices, rate, references, description, userId});
 
-    service.save()
-        .then(createdService => res.status(201).json({message: "Service registered!", service: createdService}))
-}
+    return service.save()
+        .then(createdService => {
+            if(!createdService) {
+                throw new Error();
+            }
+            res.status(201).json({message: "Service registered!", service: createdService})
+        })
+        .catch(error => res.status(500).json({error}))
+    }
 
 exports.editService = (req, res, next) => {
 
     const {offeredServices, rate, references, description} = req.body;
     
-    Service.findById(req.body._id)
+    return Service.findById(req.body._id)
         .then(service => {
 
             service.offeredServices = offeredServices;
@@ -47,7 +50,7 @@ exports.readServices = (req, res, next) => {
         params.offeredServices = { $regex: cleanSearchText(filter), $options: 'i' };
     }
     
-    Service.find(params)
+    return Service.find(params)
         .populate('userId')
         .then(services => res.status(200).json({serv: services}))
         .catch(error => res.status(500).json({error}))

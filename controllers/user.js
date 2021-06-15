@@ -9,7 +9,7 @@ exports.registerUser = (req, res, next) => {
         throw new Error("Wrong params");
     }
 
-    User.findOne({$or : [{email}, {phoneNumber}, {username}]})
+    return User.findOne({$or : [{email}, {phoneNumber}, {username}]})
         .then(userDoc => {
             if(userDoc) {
                 throw new Error("The email, phone number or username are repeated");
@@ -28,7 +28,7 @@ exports.loginUser = (req, res, next) => {
         
     const {username, password} = req.body;
 
-    User.findOne({username : username})
+    returnUser.findOne({username : username})
         .then(user => {
             if(!user) {
                 throw new Error("The username doesn't exist");
