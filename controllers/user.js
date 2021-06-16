@@ -3,8 +3,7 @@ const bcrypt = require('bcrypt');
 
 exports.registerUser = (req, res, next) => {
     const {fullName, username, email, phoneNumber, password, gender} = req.body;
-
-    //TODO: Check propiedades!
+    
     if(!fullName?.trim()) {
         throw new Error("Wrong params");
     }
@@ -28,7 +27,7 @@ exports.loginUser = (req, res, next) => {
         
     const {username, password} = req.body;
 
-    returnUser.findOne({username : username})
+    return User.findOne({username : username})
         .then(user => {
             if(!user) {
                 throw new Error("The username doesn't exist");
@@ -38,8 +37,7 @@ exports.loginUser = (req, res, next) => {
                     if(!passwordMatch) {
                         throw new Error("The password isn't correct");
                     }
-                    console.log(user);
-                    res.status(200).json({message : "User logged", user, ok : true});
+                    return res.status(200).json({message : "User logged", user, ok : true});
                 })
         })
         .catch(({message}) => res.status(500).json({message, ok : false}));

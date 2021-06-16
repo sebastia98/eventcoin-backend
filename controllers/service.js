@@ -16,10 +16,10 @@ exports.registerService = (req, res, next) => {
 
     return service.save()
         .then(createdService => {
-            if(!createdService) {
+            if(Object.keys(createdService).length === 0) {
                 throw new Error();
             }
-            res.status(201).json({message: "Service registered!", service: createdService})
+            return res.status(201).json({message: "Service registered!", service: createdService})
         })
         .catch(error => res.status(500).json({error}))
     }
@@ -30,7 +30,6 @@ exports.editService = (req, res, next) => {
     
     return Service.findById(req.body._id)
         .then(service => {
-
             service.offeredServices = offeredServices;
             service.rate = rate;
             service.references = references;
@@ -60,7 +59,7 @@ exports.readUserServices = (req, res, next) => {
 
     console.log(req.user);
 
-    Service.find({userId : req.user._id})
+    return Service.find({userId : req.user._id})
         .populate('userId')
         .then(services => res.status(200).json({serv: services}))
         .catch(error => res.status(500).json({error}))
@@ -73,7 +72,7 @@ exports.deleteService = (req, res, next) =>
 
 exports.obtainService = (req, res, next) => {
     console.log(req.query.id);
-    Service.findById(req.query.id)
+    return Service.findById(req.query.id)
         .populate('userId')
         .then(service => res.status(200).json({serv : service}))
         .catch(error => res.status(500).json({error}))
