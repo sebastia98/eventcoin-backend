@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user");
 const serviceRoutes = require("./routes/service");
+const serviceRequestRoutes = require("./routes/serviceRequest");
+
 const mongoose = require("mongoose");
 
 const app = express();
@@ -22,6 +24,7 @@ app.use((req, res, next) => {
 
 app.use("/user", userRoutes, bodyParser);
 app.use("/service", serviceRoutes, bodyParser);
+app.use("/requestService", serviceRequestRoutes, bodyParser);
 
 mongoose.connect(
     "mongodb+srv://srAdrover:1234@cluster0.wlvhj.mongodb.net/eventcoin?retryWrites=true&w=majority",

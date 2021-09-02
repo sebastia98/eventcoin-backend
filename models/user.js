@@ -34,6 +34,12 @@ const userSchema = new Schema(
         type: String,
         required: true,
         enum: GENDER_ENUMS,
+    },
+
+    credits: {
+      type: Number,
+      required: false,
+      default: 200
     }
  },
  { timestamps: true }
