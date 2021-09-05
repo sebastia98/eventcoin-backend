@@ -57,8 +57,6 @@ exports.readServices = (req, res, next) => {
 
 exports.readUserServices = (req, res, next) => {
 
-    console.log(req.user);
-
     return Service.find({userId : req.user._id})
         .populate('userId')
         .then(services => res.status(200).json({serv: services}))
