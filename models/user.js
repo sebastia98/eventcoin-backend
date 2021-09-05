@@ -30,12 +30,6 @@ const userSchema = new Schema(
       required: true,
     },
 
-    gender: {
-        type: String,
-        required: true,
-        enum: GENDER_ENUMS,
-    },
-
     credits: {
       type: Number,
       required: false,

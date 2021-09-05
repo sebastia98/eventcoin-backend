@@ -2,7 +2,7 @@ const User = require("../models/user");
 const bcrypt = require('bcrypt');
 
 exports.registerUser = (req, res, next) => {
-    const {fullName, username, email, phoneNumber, password, gender} = req.body;
+    const {fullName, username, email, phoneNumber, password} = req.body;
     
     if(!fullName?.trim()) {
         throw new Error("Wrong params");
@@ -16,7 +16,7 @@ exports.registerUser = (req, res, next) => {
             return bcrypt.hash(password, 12);
         })
         .then(hashedPassword => {
-            const user = new User({fullName, username, email, phoneNumber, password : hashedPassword, gender});
+            const user = new User({fullName, username, email, phoneNumber, password : hashedPassword});
             return user.save();    
         })
         .then(user => res.status(201).json({message: "User registered!", ok : true, user}))
