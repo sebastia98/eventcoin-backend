@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 app.use("/user", userRoutes, bodyParser);
 app.use("/service", serviceRoutes, bodyParser);
-app.use("/requestService", serviceRequestRoutes, bodyParser);
+app.use("/serviceRequest", serviceRequestRoutes, bodyParser);
 
 mongoose.connect(
     "mongodb+srv://srAdrover:1234@cluster0.wlvhj.mongodb.net/eventcoin?retryWrites=true&w=majority",

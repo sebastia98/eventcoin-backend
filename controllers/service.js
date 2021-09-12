@@ -57,7 +57,7 @@ exports.readServices = (req, res, next) => {
 
 exports.readUserServices = (req, res, next) => {
 
-    return Service.find({userId : req.user._id})
+    return Service.find({userId : req.query.userId})
         .populate('userId')
         .then(services => res.status(200).json({serv: services}))
         .catch(error => res.status(500).json({error}))
@@ -69,10 +69,9 @@ exports.deleteService = (req, res, next) =>
         .catch(error => res.status(500).json({error}))
 
 exports.obtainService = (req, res, next) => {
-    console.log(req.query.id);
     return Service.findById(req.query.id)
         .populate('userId')
-        .then(service => res.status(200).json({serv : service}))
+        .then(service => res.status(200).json({service}))
         .catch(error => res.status(500).json({error}))
 }   
 
