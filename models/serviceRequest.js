@@ -1,6 +1,6 @@
 
 const mongoose = require('mongoose');
-const { SERVICE_REQUEST_STATE } = require("../utils/constants");  
+const { SERVICE_REQUEST_STATE, SERVICE_STATE } = require("../utils/constants");  
 
 const {Schema} = mongoose;
 
