@@ -1,5 +1,5 @@
 const Service = require("../models/service");
-const userController = require("./user");
+const ServiceRequest = require("../models/serviceRequest")
 
 const cleanSearchText = (text) =>
   text
@@ -63,9 +63,11 @@ exports.readUserServices = (req, res, next) => {
         .catch(error => res.status(500).json({error}))
 }
 
-exports.deleteService = (req, res, next) =>  
+exports.deleteService = (req, res, next) =>
     Service.deleteOne({_id : req.body._id})
-        .then(() => res.status(200).json({}))
+        .then(() => ServiceRequest.deleteMany({serviceId : req.body._id}))
+        .then(() => console.log("All requests deleted"))
+        .then(() => console.log("Service deleted"))
         .catch(error => res.status(500).json({error}))
 
 exports.obtainService = (req, res, next) => {
