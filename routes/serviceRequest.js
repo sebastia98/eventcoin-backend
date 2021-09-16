@@ -10,8 +10,14 @@ router.get("/readUserOwnerRequests", serviceRequestController.readUserOwnerReque
 
 router.get("/readUserApplicantRequests", serviceRequestController.readUserApplicantRequests)
 
+router.get("/obtainServiceRequests", serviceRequestController.obtainServiceRequests)
+
 router.post("/confirmOwnerRequest", serviceRequestController.confirmOwnerRequest)
 
 router.post("/confirmApplicantRequest", serviceRequestController.confirmApplicantRequest)
+
+router.post("/rejectRequest", serviceRequestController.rejectRequest)
+
+router.delete("/deleteRequest", serviceRequestController.deleteRequestRejected)
 
 module.exports = router;
