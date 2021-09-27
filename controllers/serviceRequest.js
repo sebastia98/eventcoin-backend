@@ -7,18 +7,22 @@ const { request } = require("express");
 exports.registerRequestService = (req, res, next) => {  
     const serviceRequest = new ServiceRequest({...req.body});
         isValidRequestService(serviceRequest)
-            .then(() => serviceRequest.save())
+            .then((totalPrice) => {
+                serviceRequest.priceRate = totalPrice
+                return serviceRequest.save()
+            })
             .then(() => res.status(201).json({message : "Request created", requestCreated : true}))
             .catch((error) => res.status(500).json({message : error.message, requestCreated : false}))        
     }
 
-const isValidRequestService = ({dateRequestService, startRequestService, endRequestService, serviceOwnerId, serviceApplicantId}) => 
+const isValidRequestService = ({dateRequestService, startRequestService, endRequestService, serviceOwnerId, serviceApplicantId, serviceId}) => 
     new Promise((resolve, reject) => {
         isRequestServiceFullField(dateRequestService, startRequestService, endRequestService);
         isSameUser(serviceOwnerId, serviceApplicantId);
         isInvalidDate(dateRequestService);
         return isOverSchedule(startRequestService, endRequestService, dateRequestService)
-            .then(() => resolve())
+            .then(() => areCreditsEnough(serviceId, serviceApplicantId, startRequestService, endRequestService))
+            .then((totalPrice) => resolve(totalPrice))
             .catch(error => reject(error))
     })
     
@@ -56,7 +60,32 @@ const isOverSchedule = (startRequestService, endRequestService, dateRequestServi
                 resolve()
             })
     })
-    
+
+const areCreditsEnough = (serviceId, userId, startRequestService, endRequestService) => 
+    new Promise ((resolve, reject) => {
+        Service.findById(serviceId)
+            .then(service => {
+                User.findById(userId)
+                    .then(user => {
+                        const workedHours = calculateHours(endRequestService, startRequestService);
+                        const totalPrice = service.rate * workedHours
+                        if(totalPrice > user.credits) {
+                            reject(new Error("You don't have enough credits"))
+                        } else {
+                            user.credits -= totalPrice
+                            user.save()
+                                .then(resolve(totalPrice)) 
+                                .catch(reject(new Error("You have problems")))
+                        }                            
+                    })
+                    .catch(() => reject(new Error("You have problems")))
+            })
+            .catch(() => reject(new Error("You have problems")))
+    })
+
+const calculateHours = (endRequestService, startRequestService) => {
+    return Number(endRequestService.substr(0, 2)) - Number(startRequestService.substr(0, 2))
+}
 
 exports.obtainServiceRequests = (req, res, next) => {
     console.log(req.query)
@@ -66,7 +95,6 @@ exports.obtainServiceRequests = (req, res, next) => {
 }
 
 exports.readUserOwnerRequests = (req, res, next) => {
-
     return ServiceRequest.find({serviceOwnerId : req.query.userId})
         .populate("serviceApplicantId")
         .populate("serviceOwnerId")
@@ -87,20 +115,18 @@ exports.readUserApplicantRequests = (req, res, next) => {
 }
 
 exports.confirmOwnerRequest = (req, res, next) => {
-    console.log(req.body.id)
     ServiceRequest.findById(req.body.id)
         .then(serviceRequest => {
             serviceRequest.ownerState = "done"            
             return serviceRequest.save()
         })
-        .then(response => deleteConfirmedRequest(response))
+        .then(response => performConfirmedRequest(response))
         .catch(error => console.log(error))
 }
 
 exports.rejectRequest = (req, res, next) => {
     ServiceRequest.findById(req.body.id)
         .then(serviceRequest => {
-            console.log("Hola")
             serviceRequest.ownerState = "rejected"
             return serviceRequest.save()
         })
@@ -108,31 +134,42 @@ exports.rejectRequest = (req, res, next) => {
 }
 
 exports.confirmApplicantRequest = (req, res, next) => {
-    console.log(req.body.id)
     ServiceRequest.findById(req.body.id)
         .then(serviceRequest => {
             serviceRequest.applicantState = "done"
             return serviceRequest.save()            
         })
-        .then(response => deleteConfirmedRequest(response))
+        .then(response => performConfirmedRequest(response))
         .catch(error => console.log(error))
 }
 
 exports.deleteRequestRejected = (req, res, next) => {
-    console.log(req.body)
     ServiceRequest.findById(req.body.id)
         .then(request => deleteRequest(request))
         .catch(error => console.log(error)) 
 
 }
 
-const deleteConfirmedRequest = (request) => {
-
-    const subtract = new Date("2000-01-01T" + request.endRequestService + ":00") - new Date("2000-01-01T" + request.startRequestService + ":00")
-    const workedHours = new Date(subtract).getHours()
-
+const performConfirmedRequest = (request) => {
     if(request.ownerState === "done" && request.applicantState === "done") {
-        deleteRequest(request)
+        User.findById(request.serviceOwnerId) 
+            .then(user => {
+                console.log(user)
+                console.log(request.priceRate)
+                user.credits += request.priceRate
+                return user.save()
+            })
+            .then(() => User.findById(request.serviceApplicantId))
+            .then(user => {
+                console.log(user)
+                console.log(request.priceRate)
+                user.credits -= request.priceRate
+                return user.save()  
+            })
+            .then(() => deleteRequest(request))
+            .catch(error => console.log(error))
+        
+        
     }
 }
 
