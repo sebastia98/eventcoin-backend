@@ -46,6 +46,9 @@ const serviceRequest = new Schema(
             type: String,
             required: true,
             enum: SERVICE_REQUEST_STATE
+        },
+        priceRate: {
+            type: Number
         }
     }
 )
