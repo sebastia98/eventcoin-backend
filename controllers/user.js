@@ -43,3 +43,9 @@ exports.loginUser = (req, res, next) => {
         .catch(({message}) => res.status(500).json({message, ok : false}));
 };
 
+exports.getCredits = (req, res, next) => {
+    User.findById(req.query.userId)
+        .then(user => res.status(200).json({credits : user.credits}))
+        .catch(error => console.log(error))
+}
+
