@@ -18,9 +18,8 @@ const serviceRequest = new Schema(
             type: String, 
             required: true
         },
-        additionalInfo: {
-            type: String,
-            required: true
+        suggestedPrice: {
+            type: Number,
         },
         serviceOwnerId: {
             type: Schema.Types.ObjectId,
@@ -39,12 +38,10 @@ const serviceRequest = new Schema(
         },
         ownerState: {
             type: String,
-            required: true,
             enum: SERVICE_REQUEST_STATE
         },
         applicantState: {
             type: String,
-            required: true,
             enum: SERVICE_REQUEST_STATE
         },
         priceRate: {
