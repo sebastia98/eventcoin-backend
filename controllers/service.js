@@ -66,8 +66,7 @@ exports.readUserServices = (req, res, next) => {
 exports.deleteService = (req, res, next) =>
     Service.deleteOne({_id : req.body._id})
         .then(() => ServiceRequest.deleteMany({serviceId : req.body._id}))
-        .then(() => console.log("All requests deleted"))
-        .then(() => console.log("Service deleted"))
+        .then(() => res.status(200).json())
         .catch(error => res.status(500).json({error}))
 
 exports.obtainService = (req, res, next) => {
