@@ -4,6 +4,7 @@ const Service = require("../models/service");
 
 exports.registerRequestService = (req, res, next) => { 
     const serviceRequest = new ServiceRequest({...req.body});
+        console.log(serviceRequest)
         isValidRequestService(serviceRequest)
             .then((totalPrice) => {
                 if(serviceRequest.suggestedPrice) {
@@ -77,10 +78,12 @@ const areCreditsEnough = (serviceId, userId, startRequestService, endRequestServ
     new Promise ((resolve, reject) => {
         Service.findById(serviceId)
             .then(service => {
+                console.log(userId)
                 User.findById(userId)
                     .then(user => {
                         const workedHours = calculateHours(endRequestService, startRequestService);
                         const totalPrice = service.rate * workedHours
+                        console.log(user)
                         if(totalPrice > user.credits) {
                             reject(new Error("You don't have enough credits"))
                         } else {
@@ -90,9 +93,9 @@ const areCreditsEnough = (serviceId, userId, startRequestService, endRequestServ
                                 .catch(reject(new Error("You have problems")))
                         }                            
                     })
-                    .catch(() => reject(new Error("You have problems")))
+                    .catch((error) => console.log(error))
             })
-            .catch(() => reject(new Error("You have problems")))
+            .catch((error) => reject(console.log(error)))
     })
 
 const calculateHours = (endRequestService, startRequestService) => {
