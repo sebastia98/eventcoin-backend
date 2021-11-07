@@ -3,12 +3,14 @@ const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user");
 const serviceRoutes = require("./routes/service");
 const serviceRequestRoutes = require("./routes/serviceRequest");
+const eventRoutes = require("./routes/event");
 
 const mongoose = require("mongoose");
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json())
+app.use(express.urlencoded({extended: true}));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,9 +24,10 @@ app.use((req, res, next) => {
     next();
   });
 
-app.use("/user", userRoutes, bodyParser);
-app.use("/service", serviceRoutes, bodyParser);
-app.use("/serviceRequest", serviceRequestRoutes, bodyParser);
+app.use("/user", userRoutes);
+app.use("/service", serviceRoutes);
+app.use("/serviceRequest", serviceRequestRoutes);
+app.use("/event", eventRoutes)
 
 mongoose.connect(
     "mongodb+srv://srAdrover:1234@cluster0.wlvhj.mongodb.net/eventcoin?retryWrites=true&w=majority",
