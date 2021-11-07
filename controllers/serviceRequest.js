@@ -17,7 +17,9 @@ exports.registerRequestService = (req, res, next) => {
                 serviceRequest.priceRate = totalPrice
                 return serviceRequest.save()
             })
-            .then(() => res.status(201).json({message : "Request created", requestCreated : true}))
+            .then((request) => {
+                console.log("Request created")
+                res.status(201).json({message : "Request created", requestCreated : request})})
             .catch((error) => res.status(500).json({message : error.message, requestCreated : false}))        
     }
 
