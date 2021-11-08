@@ -28,6 +28,7 @@ const isValidRequestService = ({dateRequestService, startRequestService, endRequ
         isRequestServiceFullField(dateRequestService, startRequestService, endRequestService);
         isSameUser(serviceOwnerId, serviceApplicantId);
         isInvalidDate(dateRequestService);
+        isInvalidSchedule(startRequestService, endRequestService)
         isSuggestedPriceNegative(suggestedPrice);
         return isOverSchedule(startRequestService, endRequestService, dateRequestService)
             .then(() => areCreditsEnough(serviceId, serviceApplicantId, startRequestService, endRequestService))
@@ -59,6 +60,11 @@ const isSuggestedPriceNegative = (suggestedPrice) => {
     }
 }
 
+const isInvalidSchedule = (startRequestService, endRequestService) => {
+    if (startRequestService > endRequestService) {
+        throw new Error("Is invalid schedule")
+    }
+}
 
 const isOverSchedule = (startRequestService, endRequestService, dateRequestService) => 
     new Promise ((resolve, reject) => {
@@ -117,7 +123,7 @@ exports.readUserOwnerRequests = (req, res, next) => {
         .populate("serviceId")
         .then((requests) => {
             res.status(200).json({requests})})
-        .catch(error => res.status(500).error({error}))
+        .catch(error => res.status(500).json({error}))
 }
 
 exports.readUserApplicantRequests = (req, res, next) => {
