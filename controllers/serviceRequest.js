@@ -1,6 +1,7 @@
 const ServiceRequest = require("../models/serviceRequest");
 const User = require("../models/user")
 const Service = require("../models/service");
+const { response } = require("express");
 
 exports.registerRequestService = (req, res, next) => { 
     const serviceRequest = new ServiceRequest({...req.body});
@@ -31,7 +32,7 @@ const isValidRequestService = ({dateRequestService, startRequestService, endRequ
         isInvalidSchedule(startRequestService, endRequestService)
         isSuggestedPriceNegative(suggestedPrice);
         return isOverSchedule(startRequestService, endRequestService, dateRequestService)
-            .then(() => areCreditsEnough(serviceId, serviceApplicantId, startRequestService, endRequestService))
+            .then(() => areCreditsEnough(serviceId, serviceApplicantId, startRequestService, endRequestService, suggestedPrice))
             .then((totalPrice) => resolve(totalPrice))
             .catch(error => reject(error))
     })
@@ -82,16 +83,19 @@ const isOverSchedule = (startRequestService, endRequestService, dateRequestServi
             })
     })
 
-const areCreditsEnough = (serviceId, userId, startRequestService, endRequestService) => 
+const areCreditsEnough = (serviceId, userId, startRequestService, endRequestService, suggestedPrice) => 
     new Promise ((resolve, reject) => {
         Service.findById(serviceId)
             .then(service => {
-                console.log(userId)
                 User.findById(userId)
                     .then(user => {
                         const workedHours = calculateHours(endRequestService, startRequestService);
-                        const totalPrice = service.rate * workedHours
-                        console.log(user)
+                        let totalPrice = 0
+                        if(suggestedPrice) {
+                            totalPrice = suggestedPrice * workedHours
+                        } else {
+                            totalPrice = service.rate * workedHours    
+                        }
                         if(totalPrice > user.credits) {
                             reject(new Error("You don't have enough credits"))
                         } else {
@@ -143,7 +147,8 @@ exports.confirmOwnerRequest = (req, res, next) => {
             return serviceRequest.save()
         })
         .then(response => performConfirmedRequest(response))
-        .catch(error => console.log(error))
+        .then((response) => res.status(200).json({response}))
+        .catch(error => reject(error))
 }
 
 exports.rejectRequest = (req, res, next) => {
@@ -152,6 +157,7 @@ exports.rejectRequest = (req, res, next) => {
             serviceRequest.ownerState = "rejected"
             return serviceRequest.save()
         })
+        .then((response) => res.status(200).json({response}))
         .catch(error => console.log(error))
 }
 
@@ -162,40 +168,52 @@ exports.confirmApplicantRequest = (req, res, next) => {
             return serviceRequest.save()            
         })
         .then(response => performConfirmedRequest(response))
-        .catch(error => console.log(error))
-}
+        .then((response) => res.status(200).json({response}))
+        .catch(error => reject(error))
+    }
 
 exports.deleteRequestRejected = (req, res, next) => {
     ServiceRequest.findById(req.body.id)
         .then(request => deleteRequest(request))
-        .catch(error => console.log(error)) 
+        .then(response => res.status(200).json({response}))
+        .catch(error => reject(error)) 
 
 }
 
-const performConfirmedRequest = (request) => {
-    if(request.ownerState === "done" && request.applicantState === "done") {
-        User.findById(request.serviceOwnerId) 
-            .then(user => {
-                user.credits += request.priceRate
+const performConfirmedRequest = (request) => 
+
+    new Promise((resolve, reject) => {
+        if(request.ownerState === "done" && request.applicantState === "done") {
+            User.findById(request.serviceOwnerId) 
+                .then(user => {
+                    user.credits += request.priceRate
+                    return user.save()
+                })
+                .then(() => deleteRequest(request))
+                .then(() => resolve(request))
+                .catch(error => reject(error))        
+        } else {
+            resolve(request)
+        }
+    })
+
+
+const deleteRequest = (request) => 
+    new Promise((resolve, reject) => {
+        User.findById(request.serviceApplicantId)
+            .then((user) => {
+                if(request.ownerState === "rejected") {
+                    user.credits += request.priceRate
+                }
                 return user.save()
             })
-            .then(() => User.findById(request.serviceApplicantId))
-            .then(user => {
-                user.credits -= request.priceRate
-                return user.save()  
+            .then(() => ServiceRequest.deleteOne({_id : request._id}))
+            .then(() => {
+                resolve()
             })
-            .then(() => deleteRequest(request))
-            .catch(error => console.log(error))
-        
-        
-    }
-}
-
-const deleteRequest = (request) => {
-    ServiceRequest.deleteOne({_id : request._id})
-        .then(() => {})
-        .catch(error => console.log(error))
-}
+            .catch(error => reject(error))
+    })
+    
 
 
 
